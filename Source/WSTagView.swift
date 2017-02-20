@@ -10,11 +10,11 @@ import UIKit
 
 open class WSTagView: UIView {
 
-    internal static let xPadding: CGFloat = 6.0
-    internal static let yPadding: CGFloat = 2.0
+    public static let xPadding: CGFloat = 6.0
+    public static let yPadding: CGFloat = 2.0
 
-    fileprivate let backgroundLayer = CALayer()
-    fileprivate let textLabel = UILabel()
+    public let backgroundLayer = CALayer()
+    public let textLabel = UILabel()
 
     open var displayText: String = "" {
         didSet {
@@ -156,7 +156,7 @@ open class WSTagView: UIView {
 
     // MARK: - Attributed Text
 
-    fileprivate func updateLabelText() {
+    public func updateLabelText() {
         // Unselected shows "[displayText]," and selected is "[displayText]"
         textLabel.text = displayText + displayDelimiter
         // Expand Label
