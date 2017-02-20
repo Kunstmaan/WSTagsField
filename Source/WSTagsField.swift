@@ -13,7 +13,6 @@ open class WSTagsField: UIView {
     fileprivate static let HSPACE: CGFloat = 0.0
     fileprivate static let TEXT_FIELD_HSPACE: CGFloat = WSTagView.xPadding
     fileprivate static let VSPACE: CGFloat = 4.0
-    fileprivate static let MINIMUM_TEXTFIELD_WIDTH: CGFloat = 56.0
     fileprivate static let STANDARD_ROW_HEIGHT: CGFloat = 25.0
     fileprivate static let FIELD_MARGIN_X: CGFloat = WSTagView.xPadding
     
@@ -317,8 +316,8 @@ open class WSTagsField: UIView {
         curX += max(0, WSTagsField.TEXT_FIELD_HSPACE - self.spaceBetweenTags)
         let textBoundary: CGFloat = isOnFirstLine ? firstLineRightBoundary : rightBoundary
         var availableWidthForTextField: CGFloat = textBoundary - curX
-        
-        if availableWidthForTextField < WSTagsField.MINIMUM_TEXTFIELD_WIDTH {
+        let textSize = textField.text?.size(attributes: [NSFontAttributeName: self.textField.font!]) ?? CGSize(width: 0.0, height: 0.0)
+        if availableWidthForTextField < textSize.width {
             isOnFirstLine = false
             // If in the future we add more UI elements below the tags,
             // isOnFirstLine will be useful, and this calculation is important.
@@ -512,6 +511,55 @@ open class WSTagsField: UIView {
     // MARK: - Actions
     
     open func onTextFieldDidChange(_ sender: AnyObject) {
+        if let text = textField.text {
+            let oldContentHeight: CGFloat = self.intrinsicContentHeight
+            let textSize = text.size(attributes: [NSFontAttributeName: self.textField.font!])
+            let startXPos = (padding.left + WSTagsField.TEXT_FIELD_HSPACE)
+            
+            // find the latest tags view
+            var latestTagsView: WSTagView? = nil
+            for tagView in tagViews {
+                if latestTagsView == nil || (tagView.frame.origin.x >= latestTagsView!.frame.origin.x && tagView.frame.origin.y > latestTagsView!.frame.origin.y) {
+                    latestTagsView = tagView
+                }
+            }
+            
+            if let latestTagsView = latestTagsView {
+                let availableSpace = self.bounds.width - padding.right - latestTagsView.frame.origin.x - latestTagsView.frame.size.width - WSTagsField.TEXT_FIELD_HSPACE
+                
+                if self.textField.frame.origin.y != latestTagsView.frame.origin.y && availableSpace > textSize.width {
+                    // move back
+                    self.textField.frame.size.width = availableSpace
+                    self.textField.frame.origin.x = latestTagsView.frame.origin.x + latestTagsView.frame.size.width + WSTagsField.TEXT_FIELD_HSPACE
+                    self.textField.frame.origin.y = latestTagsView.frame.origin.y
+                    self.intrinsicContentHeight = self.textField.frame.origin.y + WSTagsField.STANDARD_ROW_HEIGHT + padding.bottom
+                    invalidateIntrinsicContentSize()
+                }
+            }
+            
+            if self.textField.frame.origin.x != startXPos && textSize.width > textField.frame.width {
+                // move to next
+                self.textField.frame.size.width = (self.bounds.width - padding.right - padding.left)
+                self.textField.frame.origin.x += startXPos
+                self.textField.frame.origin.y += (WSTagsField.STANDARD_ROW_HEIGHT + WSTagsField.VSPACE)
+                self.intrinsicContentHeight = self.intrinsicContentHeight + (WSTagsField.STANDARD_ROW_HEIGHT + WSTagsField.VSPACE)
+                invalidateIntrinsicContentSize()
+            }
+            
+            if oldContentHeight != self.intrinsicContentHeight {
+                let newContentHeight = intrinsicContentSize.height
+                if let didChangeHeightToEvent = self.onDidChangeHeightTo {
+                    didChangeHeightToEvent(self, newContentHeight)
+                }
+                frame.size.height = newContentHeight
+                
+                setNeedsDisplay()
+            }
+            else {
+                frame.size.height = oldContentHeight
+            }
+        }
+        
         if let didChangeTextEvent = onDidChangeText {
             didChangeTextEvent(self, textField.text)
         }
