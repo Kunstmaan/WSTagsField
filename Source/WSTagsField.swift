@@ -527,8 +527,7 @@ open class WSTagsField: UIView {
             if let latestTagsView = latestTagsView {
                 let availableSpace = self.bounds.width - padding.right - latestTagsView.frame.origin.x - latestTagsView.frame.size.width - WSTagsField.TEXT_FIELD_HSPACE
                 
-                if self.textField.frame.origin.y != latestTagsView.frame.origin.y && availableSpace > textSize.width {
-                    // move back
+                if self.textField.frame.origin.y + ((WSTagsField.STANDARD_ROW_HEIGHT - latestTagsView.frame.height)/2.0) != latestTagsView.frame.origin.y && availableSpace > textSize.width {
                     self.textField.frame.size.width = availableSpace
                     self.textField.frame.origin.x = latestTagsView.frame.origin.x + latestTagsView.frame.size.width + WSTagsField.TEXT_FIELD_HSPACE
                     self.textField.frame.origin.y = latestTagsView.frame.origin.y
@@ -538,7 +537,6 @@ open class WSTagsField: UIView {
             }
             
             if self.textField.frame.origin.x != startXPos && textSize.width > textField.frame.width {
-                // move to next
                 self.textField.frame.size.width = (self.bounds.width - padding.right - padding.left)
                 self.textField.frame.origin.x += startXPos
                 self.textField.frame.origin.y += (WSTagsField.STANDARD_ROW_HEIGHT + WSTagsField.VSPACE)
