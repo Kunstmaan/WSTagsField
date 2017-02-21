@@ -255,7 +255,9 @@ open class WSTagsField: UIView {
         textField.delegate = self
         textField.font = font
         textField.textColor = fieldTextColor
-        textField.tintColor = fieldTintColor
+        if let fieldTintColor = self.fieldTintColor {
+            textField.tintColor = fieldTintColor
+        }
         addSubview(textField)
 
         textField.onDeleteBackwards = {
