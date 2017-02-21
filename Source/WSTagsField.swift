@@ -64,6 +64,12 @@ open class WSTagsField: UIView {
             textField.textColor = fieldTextColor
         }
     }
+    
+    open var fieldTintColor: UIColor? {
+        didSet {
+            textField.tintColor = fieldTintColor
+        }
+    }
 
     open var placeholder: String = "Tags" {
         didSet {
@@ -249,6 +255,7 @@ open class WSTagsField: UIView {
         textField.delegate = self
         textField.font = font
         textField.textColor = fieldTextColor
+        textField.tintColor = fieldTintColor
         addSubview(textField)
 
         textField.onDeleteBackwards = {
