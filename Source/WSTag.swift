@@ -12,11 +12,19 @@ public protocol WSTag {
     
     var text: String { get }
     
+    var description: String { get }
+    
 }
 
 public struct WSDefaultTag: WSTag {
     
     public let text: String
+    
+    public var description: String {
+        get {
+            return text
+        }
+    }
     
     public init(_ text: String) {
         self.text = text
@@ -31,5 +39,5 @@ public struct WSDefaultTag: WSTag {
 }
 
 func ==(lhs: WSTag, rhs: WSTag) -> Bool {
-    return lhs.text == rhs.text
+    return lhs.description == rhs.description
 }
