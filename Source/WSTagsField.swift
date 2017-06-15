@@ -588,6 +588,10 @@ extension WSTagsField: UITextFieldDelegate {
     }
 
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if let text = textField.text {
+            return !(text.isEmpty && string == " ")
+        }
+        
         return true
     }
 
