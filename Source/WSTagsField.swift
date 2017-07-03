@@ -76,6 +76,8 @@ open class WSTagsField: UIView {
         }
     }
     
+    open var invalidTextFieldInputColor: UIColor = UIColor.red
+    
     open var fieldTintColor: UIColor? {
         didSet {
             textField.tintColor = fieldTintColor
@@ -602,21 +604,17 @@ open class WSTagsField: UIView {
             return (valid: false, message: WSTagsField.MIN_CHARACTER_VALIDATION_MESSAGE)
         } else if text.characters.count > WSTagsField.MAX_NUMBER_OF_CHARACTERS {
             let index = text.index(text.startIndex, offsetBy: WSTagsField.MAX_NUMBER_OF_CHARACTERS)
-            print("This is the allowed part: \(text.substring(to: index))")
-            print("this is the overflowed part: \(text.substring(from: index))")
             
             let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [:])
-            overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: UIColor.red])) // TODO: Make this customizeable
+            overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
             
             textField.attributedText = overflowingText
             
             return (valid: false, message: WSTagsField.MAX_CHARACTER_VALIDATION_MESSAGE)
         }
 
-        if let (valid, message) = self.delegate?.validations() {
-            if !valid {
-                return (valid: valid, message: message)
-            }
+        if let (valid, message) = self.delegate?.validations(), !valid {
+            return (valid: valid, message: message)
         }
         
         return (valid: true, message: nil)
