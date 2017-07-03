@@ -590,17 +590,6 @@ open class WSTagsField: UIView {
             }
             
             self.textfieldValidation = self.validateTagsInputTextField(forValue: text)
-            
-            if text.characters.count > WSTagsField.MAX_NUMBER_OF_CHARACTERS {
-                let index = text.index(text.startIndex, offsetBy: WSTagsField.MAX_NUMBER_OF_CHARACTERS)
-                print("This is the allowed part: \(text.substring(to: index))")
-                print("this is the overflowed part: \(text.substring(from: index))")
-                
-                let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [:])
-                overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: UIColor.red])) // TODO: Make this customizeable
-                
-                textField.attributedText = overflowingText
-            }
         }
         
         if let didChangeTextEvent = onDidChangeText {
