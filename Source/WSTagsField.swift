@@ -8,7 +8,16 @@
 
 import UIKit
 
+public protocol WSTagsFieldDelegate {
+    func validations() -> (valid: Bool, message: String?)
+}
+
 open class WSTagsField: UIView {
+    
+    open static var MIN_NUMBER_OF_CHARACTERS: Int = 1
+    open static var MAX_NUMBER_OF_CHARACTERS: Int = 255
+    open static var MIN_CHARACTER_VALIDATION_MESSAGE: String = "You need to enter at least \(WSTagsField.MIN_NUMBER_OF_CHARACTERS) character\(WSTagsField.MIN_NUMBER_OF_CHARACTERS > 1 ? "s" : ""))"
+    open static var MAX_CHARACTER_VALIDATION_MESSAGE: String = "You can only enter \(WSTagsField.MAX_NUMBER_OF_CHARACTERS) characters"
     
     fileprivate static let HSPACE: CGFloat = 0.0
     fileprivate static let TEXT_FIELD_HSPACE: CGFloat = WSTagView.xPadding
@@ -17,6 +26,9 @@ open class WSTagsField: UIView {
     fileprivate static let FIELD_MARGIN_X: CGFloat = WSTagView.xPadding
     
     fileprivate let textField = BackspaceDetectingTextField()
+    fileprivate var textfieldValidation: (valid: Bool, message: String?) = (valid: true, message: nil)
+    
+    public var delegate: WSTagsFieldDelegate?
     
     open override var tintColor: UIColor! {
         didSet {
@@ -69,7 +81,7 @@ open class WSTagsField: UIView {
             textField.tintColor = fieldTintColor
         }
     }
-
+    
     open var placeholder: String = "Tags" {
         didSet {
             updatePlaceholderTextVisibility()
@@ -157,6 +169,15 @@ open class WSTagsField: UIView {
         }
         set {
             textField.enablesReturnKeyAutomatically = newValue
+        }
+    }
+    
+    public var attributedText: NSAttributedString? {
+        get {
+            return textField.attributedText
+        }
+        set {
+            textField.attributedText = newValue
         }
     }
     
@@ -269,6 +290,8 @@ open class WSTagsField: UIView {
             textField.tintColor = fieldTintColor
         }
         addSubview(textField)
+        
+        self.textfieldValidation = (valid: false, message: WSTagsField.MIN_CHARACTER_VALIDATION_MESSAGE)
         
         textField.onDeleteBackwards = {
             if self.readOnly {
@@ -565,6 +588,19 @@ open class WSTagsField: UIView {
             else {
                 frame.size.height = oldContentHeight
             }
+            
+            self.textfieldValidation = self.validateTagsInputTextField(forValue: text)
+            
+            if text.characters.count > WSTagsField.MAX_NUMBER_OF_CHARACTERS {
+                let index = text.index(text.startIndex, offsetBy: WSTagsField.MAX_NUMBER_OF_CHARACTERS)
+                print("This is the allowed part: \(text.substring(to: index))")
+                print("this is the overflowed part: \(text.substring(from: index))")
+                
+                let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [:])
+                overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: UIColor.red])) // TODO: Make this customizeable
+                
+                textField.attributedText = overflowingText
+            }
         }
         
         if let didChangeTextEvent = onDidChangeText {
@@ -572,6 +608,30 @@ open class WSTagsField: UIView {
         }
     }
     
+    fileprivate func validateTagsInputTextField(forValue text: String) -> (valid: Bool, message: String?) {
+        if text.characters.count < WSTagsField.MIN_NUMBER_OF_CHARACTERS {
+            return (valid: false, message: WSTagsField.MIN_CHARACTER_VALIDATION_MESSAGE)
+        } else if text.characters.count > WSTagsField.MAX_NUMBER_OF_CHARACTERS {
+            let index = text.index(text.startIndex, offsetBy: WSTagsField.MAX_NUMBER_OF_CHARACTERS)
+            print("This is the allowed part: \(text.substring(to: index))")
+            print("this is the overflowed part: \(text.substring(from: index))")
+            
+            let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [:])
+            overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: UIColor.red])) // TODO: Make this customizeable
+            
+            textField.attributedText = overflowingText
+            
+            return (valid: false, message: WSTagsField.MAX_CHARACTER_VALIDATION_MESSAGE)
+        }
+
+        if let (valid, message) = self.delegate?.validations() {
+            if !valid {
+                return (valid: valid, message: message)
+            }
+        }
+        
+        return (valid: true, message: nil)
+    }
     
     // MARK: - Tag selection
     
@@ -618,12 +678,17 @@ open class WSTagsField: UIView {
         }
     }
     
+    // MARK: - Validations
+    public func textFieldIsValid() -> (valid: Bool, message: String?) {
+        return self.textfieldValidation
+    }
 }
 
 public func ==(lhs: UITextField, rhs: WSTagsField) -> Bool {
     return lhs == rhs.textField
 }
 
+// TODO SELF VALIDATE ON LENGTH AND HIGLIGHT COLOR AND STUFF
 extension WSTagsField: UITextFieldDelegate {
     
     public func textFieldDidBeginEditing(_ textField: UITextField) {
