@@ -677,7 +677,6 @@ public func ==(lhs: UITextField, rhs: WSTagsField) -> Bool {
     return lhs == rhs.textField
 }
 
-// TODO SELF VALIDATE ON LENGTH AND HIGLIGHT COLOR AND STUFF
 extension WSTagsField: UITextFieldDelegate {
     
     public func textFieldDidBeginEditing(_ textField: UITextField) {
