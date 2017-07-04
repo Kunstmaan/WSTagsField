@@ -13,6 +13,7 @@ public protocol WSTagsFieldDelegate {
 }
 
 open class WSTagsField: UIView {
+    
     fileprivate static let HSPACE: CGFloat = 0.0
     fileprivate static let TEXT_FIELD_HSPACE: CGFloat = WSTagView.xPadding
     fileprivate static let VSPACE: CGFloat = 4.0
