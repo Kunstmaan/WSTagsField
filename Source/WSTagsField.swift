@@ -9,7 +9,7 @@
 import UIKit
 
 public protocol WSTagsFieldDelegate {
-    func validations() -> (valid: Bool, message: String?)
+    func tagInputFieldValidations() -> (valid: Bool, message: String?)
 }
 
 open class WSTagsField: UIView {
@@ -605,18 +605,20 @@ open class WSTagsField: UIView {
         } else if text.characters.count > WSTagsField.MAX_NUMBER_OF_CHARACTERS {
             let index = text.index(text.startIndex, offsetBy: WSTagsField.MAX_NUMBER_OF_CHARACTERS)
             
-            let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [:])
+            let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSForegroundColorAttributeName: self.fieldTextColor ?? UIColor.white])
             overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
-            
+        
             textField.attributedText = overflowingText
             
             return (valid: false, message: WSTagsField.MAX_CHARACTER_VALIDATION_MESSAGE)
         }
 
-        if let (valid, message) = self.delegate?.validations(), !valid {
+        if let (valid, message) = self.delegate?.tagInputFieldValidations(), !valid {
+            textField.textColor = self.invalidTextFieldInputColor
             return (valid: valid, message: message)
         }
         
+        textField.textColor = self.fieldTextColor ?? UIColor.white
         return (valid: true, message: nil)
     }
     
