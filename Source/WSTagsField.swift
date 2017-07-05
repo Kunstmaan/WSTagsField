@@ -599,6 +599,7 @@ open class WSTagsField: UIView {
     
     fileprivate func validateTagsInputTextField(forValue text: String) -> (valid: Bool, message: String?) {
         if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
+            textField.textColor = self.invalidTextFieldInputColor
             return (valid: false, message: self.minCharacterValidationMessage)
         } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
             let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
