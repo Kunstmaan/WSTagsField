@@ -9,7 +9,14 @@
 import UIKit
 
 public protocol WSTagsFieldDelegate {
-    func tagInputFieldValidations() -> (valid: Bool, message: String?)
+    func tagInputFieldValidations() -> (valid: Bool, error: WSTagError?)
+}
+
+public protocol WSTagError {}
+
+public enum WSTagsFieldError: WSTagError {
+    case maxCharacters
+    case minCharacters
 }
 
 open class WSTagsField: UIView {
@@ -21,7 +28,7 @@ open class WSTagsField: UIView {
     fileprivate static let FIELD_MARGIN_X: CGFloat = WSTagView.xPadding
     
     fileprivate let textField = BackspaceDetectingTextField()
-    fileprivate var textfieldValidation: (valid: Bool, message: String?) = (valid: true, message: nil)
+    fileprivate var textfieldValidation: (valid: Bool, error: WSTagError?) = (valid: true, error: nil)
     
     public var delegate: WSTagsFieldDelegate?
     
@@ -189,8 +196,6 @@ open class WSTagsField: UIView {
     
     public var minNumberOfCharacters: Int?
     public var maxNumberOfCharacters: Int?
-    public var minCharacterValidationMessage: String = "You did not enter enough characters for a valid tag."
-    public var maxCharacterValidationMessage: String = "You entered too many characters for a valid tag"
     
     @available(iOS, unavailable)
     override open var inputAccessoryView: UIView? {
@@ -597,10 +602,10 @@ open class WSTagsField: UIView {
         }
     }
     
-    fileprivate func validateTagsInputTextField(forValue text: String) -> (valid: Bool, message: String?) {
+    fileprivate func validateTagsInputTextField(forValue text: String) -> (valid: Bool, error: WSTagError?) {
         if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
             textField.textColor = self.invalidTextFieldInputColor
-            return (valid: false, message: self.minCharacterValidationMessage)
+            return (valid: false, error: WSTagsFieldError.minCharacters)
         } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
             let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
             
@@ -609,16 +614,16 @@ open class WSTagsField: UIView {
         
             textField.attributedText = overflowingText
             
-            return (valid: false, message: self.maxCharacterValidationMessage)
+            return (valid: false, error: WSTagsFieldError.maxCharacters)
         }
 
-        if let (valid, message) = self.delegate?.tagInputFieldValidations(), !valid {
+        if let (valid, error) = self.delegate?.tagInputFieldValidations(), !valid {
             textField.textColor = self.invalidTextFieldInputColor
-            return (valid: valid, message: message)
+            return (valid: valid, error: error)
         }
         
         textField.textColor = self.fieldTextColor ?? UIColor.white
-        return (valid: true, message: nil)
+        return (valid: true, error: nil)
     }
     
     // MARK: - Tag selection
@@ -667,7 +672,7 @@ open class WSTagsField: UIView {
     }
     
     // MARK: - Validations
-    public func textFieldIsValid() -> (valid: Bool, message: String?) {
+    public func textFieldIsValid() -> (valid: Bool, error: WSTagError?) {
         return self.textfieldValidation
     }
 }
