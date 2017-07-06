@@ -628,7 +628,7 @@ open class WSTagsField: UIView {
         if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
             textField.textColor = self.invalidTextFieldInputColor
             
-            return WSTagsFieldValidationResult.tooManyCharacters
+            return WSTagsFieldValidationResult.notEnoughCharacters
         } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
             let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
             
@@ -637,7 +637,7 @@ open class WSTagsField: UIView {
         
             textField.attributedText = overflowingText
             
-            return WSTagsFieldValidationResult.notEnoughCharacters
+            return WSTagsFieldValidationResult.tooManyCharacters
         }
 
         let result = self.delegate?.tagInputFieldValidations()
