@@ -16,7 +16,7 @@ public protocol WSTagsValidationResult {}
 
 extension WSTagsValidationResult {
     
-    var boolValue: Bool {
+    public var boolValue: Bool {
         get {
             if let validationResult = self as? WSTagsFieldValidationResult {
                 switch validationResult {
@@ -50,7 +50,7 @@ open class WSTagsField: UIView {
     fileprivate static let FIELD_MARGIN_X: CGFloat = WSTagView.xPadding
     
     fileprivate let textField = BackspaceDetectingTextField()
-    fileprivate var textfieldValidation: WSTagsValidationResult = WSTagsFieldValidationResult.valid
+    fileprivate(set) public var validationResult: WSTagsValidationResult = WSTagsFieldValidationResult.valid
     
     public var delegate: WSTagsFieldDelegate?
     
@@ -616,7 +616,7 @@ open class WSTagsField: UIView {
                 frame.size.height = oldContentHeight
             }
             
-            self.textfieldValidation = self.validateTagsInputTextField(forValue: text)
+            self.validationResult = self.validateTagsInputTextField(forValue: text)
         }
         
         if let didChangeTextEvent = onDidChangeText {
@@ -697,11 +697,6 @@ open class WSTagsField: UIView {
         }
     }
     
-    // MARK: - Validations
-    public func textFieldIsValid() -> WSTagsValidationResult {
-        
-        return self.textfieldValidation
-    }
 }
 
 public func ==(lhs: UITextField, rhs: WSTagsField) -> Bool {
