@@ -8,6 +8,37 @@
 
 import UIKit
 
+public protocol WSTagsFieldDelegate {
+    func tagInputFieldValidations() -> WSTagsValidationResult
+}
+
+public protocol WSTagsValidationResult {}
+
+extension WSTagsValidationResult {
+    
+    public var boolValue: Bool {
+        get {
+            if let validationResult = self as? WSTagsFieldValidationResult {
+                switch validationResult {
+                case WSTagsFieldValidationResult.valid:
+                    return true
+                default:
+                    return false
+                }
+            }
+            
+            return false
+        }
+    }
+    
+}
+
+public enum WSTagsFieldValidationResult: WSTagsValidationResult {
+    case valid
+    case notEnoughCharacters
+    case tooManyCharacters
+}
+
 open class WSTagsField: UIView {
     
     fileprivate static let HSPACE: CGFloat = 0.0
@@ -17,7 +48,10 @@ open class WSTagsField: UIView {
     fileprivate static let FIELD_MARGIN_X: CGFloat = WSTagView.xPadding
     
     fileprivate let textField = BackspaceDetectingTextField()
+    fileprivate(set) public var validationResult: WSTagsValidationResult = WSTagsFieldValidationResult.valid
     
+    public var delegate: WSTagsFieldDelegate?
+
     open override var tintColor: UIColor! {
         didSet {
             tagViews.forEach() { item in
@@ -34,6 +68,8 @@ open class WSTagsField: UIView {
         }
     }
     
+    open var invalidTextFieldInputColor: UIColor = UIColor.red
+
     open var selectedColor: UIColor? {
         didSet {
             tagViews.forEach() { item in
@@ -168,6 +204,18 @@ open class WSTagsField: UIView {
             textField.text = newValue
         }
     }
+  
+    public var attributedText: NSAttributedString? {
+        get {
+            return textField.attributedText
+        }
+        set {
+            textField.attributedText = newValue
+        }
+    }
+    
+    public var minNumberOfCharacters: Int?
+    public var maxNumberOfCharacters: Int?
     
     @available(iOS, unavailable)
     override open var inputAccessoryView: UIView? {
@@ -565,14 +613,43 @@ open class WSTagsField: UIView {
             else {
                 frame.size.height = oldContentHeight
             }
+            
+            self.validationResult = self.validateTagsInputTextField(forValue: text)
         }
         
         if let didChangeTextEvent = onDidChangeText {
             didChangeTextEvent(self, textField.text)
         }
     }
-    
-    
+
+    fileprivate func validateTagsInputTextField(forValue text: String) -> WSTagsValidationResult {
+        if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
+            textField.textColor = self.invalidTextFieldInputColor
+            
+            return WSTagsFieldValidationResult.notEnoughCharacters
+        } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
+            let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
+            
+            let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSForegroundColorAttributeName: self.fieldTextColor ?? UIColor.white])
+            overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
+            
+            textField.attributedText = overflowingText
+            
+            return WSTagsFieldValidationResult.tooManyCharacters
+        }
+        
+        let result = self.delegate?.tagInputFieldValidations()
+        if result != nil && !result!.boolValue {
+            textField.textColor = self.invalidTextFieldInputColor
+            
+            return result!
+        }
+        
+        textField.textColor = self.fieldTextColor ?? UIColor.white
+        
+        return WSTagsFieldValidationResult.valid
+    }
+
     // MARK: - Tag selection
     
     open func selectNextTag() {
