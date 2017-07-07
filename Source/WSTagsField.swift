@@ -565,19 +565,21 @@ open class WSTagsField: UIView {
     }
 
     fileprivate func validateTagsInputTextField(forValue text: String) -> WSTagsValidationResult {
-        if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
-            textField.textColor = self.invalidTextFieldInputColor
-            
-            return WSTagsFieldValidationResult.notEnoughCharacters
-        } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
-            let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
-            
-            let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSForegroundColorAttributeName: self.fieldTextColor ?? UIColor.white])
-            overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
-            
-            textField.attributedText = overflowingText
-            
-            return WSTagsFieldValidationResult.tooManyCharacters
+        if (self.textField.text?.isEmpty ?? true) == false {
+            if let minNumberOfCharacters = self.minNumberOfCharacters, text.characters.count < minNumberOfCharacters {
+                textField.textColor = self.invalidTextFieldInputColor
+                
+                return WSTagsFieldValidationResult.notEnoughCharacters
+            } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
+                let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
+                
+                let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSForegroundColorAttributeName: self.fieldTextColor ?? UIColor.white])
+                overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
+                
+                textField.attributedText = overflowingText
+                
+                return WSTagsFieldValidationResult.tooManyCharacters
+            }
         }
         
         let result = self.delegate?.tagInputFieldValidations()
