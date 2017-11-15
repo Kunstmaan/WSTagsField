@@ -373,7 +373,7 @@ open class WSTagsField: UIView {
         curX += max(0, WSTagsField.TEXT_FIELD_HSPACE - self.spaceBetweenTags)
         let textBoundary: CGFloat = isOnFirstLine ? firstLineRightBoundary : rightBoundary
         var availableWidthForTextField: CGFloat = textBoundary - curX
-        let textSize = textField.text?.size(attributes: [NSFontAttributeName: self.textField.font!]) ?? CGSize(width: 0.0, height: 0.0)
+        let textSize = textField.text?.size(withAttributes: [NSAttributedStringKey.font: self.textField.font!]) ?? CGSize(width: 0.0, height: 0.0)
         if availableWidthForTextField < textSize.width {
             isOnFirstLine = false
             // If in the future we add more UI elements below the tags,
@@ -567,10 +567,10 @@ open class WSTagsField: UIView {
     
     // MARK: - Actions
     
-    open func onTextFieldDidChange(_ sender: AnyObject) {
+    @objc open func onTextFieldDidChange(_ sender: AnyObject) {
         if let text = textField.text {
             let oldContentHeight: CGFloat = self.intrinsicContentHeight
-            let textSize = text.size(attributes: [NSFontAttributeName: self.textField.font!])
+            let textSize = text.size(withAttributes: [NSAttributedStringKey.font: self.textField.font!])
             let startXPos = (padding.left + WSTagsField.TEXT_FIELD_HSPACE)
             
             // find the latest tags view
@@ -631,8 +631,8 @@ open class WSTagsField: UIView {
             } else if let maxNumberOfCharacters = self.maxNumberOfCharacters, text.characters.count > maxNumberOfCharacters {
                 let index = text.index(text.startIndex, offsetBy: maxNumberOfCharacters)
                 
-                let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSForegroundColorAttributeName: self.fieldTextColor ?? UIColor.white])
-                overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSForegroundColorAttributeName: self.invalidTextFieldInputColor]))
+                let overflowingText = NSMutableAttributedString(string: text.substring(to: index), attributes: [NSAttributedStringKey.foregroundColor: self.fieldTextColor ?? UIColor.white])
+                overflowingText.append(NSAttributedString(string: text.substring(from: index), attributes: [NSAttributedStringKey.foregroundColor: self.invalidTextFieldInputColor]))
                 
                 textField.attributedText = overflowingText
                 
